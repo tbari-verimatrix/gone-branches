@@ -1,0 +1,30 @@
+#!/opt/homebrew/opt/ruby/bin/ruby
+
+system( "git fetch -p" )
+
+gone_branches= `git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | grep gone`
+
+branches_to_delete = Array.new
+
+gone_branches.each_line { |line|
+    branch_name = line.split( " " )[0].strip()
+    branches_to_delete.push( branch_name )
+    print( "#{ branch_name } <-- #{ line }" )
+}
+
+print( "\n\nThe following local branches will be deleted (#{ branches_to_delete.count }):\n" )
+branches_to_delete.each { |branch_name|
+    print( "  #{ branch_name }\n" )
+}
+
+print( "Is that ok? (type 'yes' to proceed) " )
+response = gets.chomp()
+
+if( response == "yes" )
+    print( "\n\nDo the deed!\n" )
+    branches_to_delete.each { |branch_name|
+        system( "git branch -D #{ branch_name }" )
+    }
+else
+    print( "Cancelled!\n" )
+end
